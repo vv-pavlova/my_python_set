@@ -1,7 +1,7 @@
 class MySet:
     def __init__(self, *v_set):
         self.for_storage = [];
-        self.temp_storage = [];
+        self.for_temp_storage = [];
         self.cell_num = None;
         self.cell_num_start = None;
         self.count_values = 0;
@@ -14,17 +14,17 @@ class MySet:
 
 
     def rebalancing_set(self):
-        self.temp_storage = self.for_storage
+        self.for_temp_storage = self.for_storage
         if self.balance_index >= 0.7:
             self.for_storage = [None] * len(self.for_storage) * 2
             self.count_values = 0
         else:
             self.for_storage = [None] * round ( len(self.for_storage) / 2 + 1 )
             self.count_values = 0
-        for i in range(len(self.temp_storage)):
-            if ( self.temp_storage[i] != None
-                and self.temp_storage[i] != [None,0] ):
-                self.add_value(self.temp_storage[i][0])
+        for i in range(len(self.for_temp_storage)):
+            if ( self.for_temp_storage[i] != None
+                and self.for_temp_storage[i] != [None,0] ):
+                self.add_value(self.for_temp_storage[i][0])
 
     def add_value(self, v_val):
         self.cell_num = hash(v_val) % len(self.for_storage)
@@ -96,9 +96,6 @@ class MySet:
                 self.cell_num = (self.cell_num + 1)%len(self.for_storage)
                 if self.cell_num == self.cell_num_start:
                     return False
-
-
-
 
     def clear_set(self):
         self.for_storage = []
