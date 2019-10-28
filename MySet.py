@@ -84,6 +84,22 @@ class MySet:
         for i in range(len(v_set)):
             self.add_value(v_set[i])
 
+    def has(self, v_val):
+        self.cell_num = hash(v_val) % len(self.for_storage)
+        self.cell_num_start = hash(v_val) % len(self.for_storage)
+        while (True):
+            if self.for_storage[self.cell_num] == [v_val,1]:
+                return True
+            elif self.for_storage[self.cell_num] == None:
+                return False
+            else:
+                self.cell_num = (self.cell_num + 1)%len(self.for_storage)
+                if self.cell_num == self.cell_num_start:
+                    return False
+
+
+
+
     def clear_set(self):
         self.for_storage = []
 
