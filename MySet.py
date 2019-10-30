@@ -40,10 +40,10 @@ class MySet:
 
     def add_value(self, v_value):
         index = exit_index = self.get_index(v_value)
-        while (True):
-            if (self.has(v_value)):
-                break
-            else:
+        if (self.has(v_value)):
+            return
+        else:
+            while (True):
                 if self.storage[index] == None:
                     self.storage[index] = [v_value,1]
                     self.count_values_in_storage += 1
