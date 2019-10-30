@@ -1,105 +1,100 @@
 class MySet:
     def __init__(self, *v_set):
-        self.for_storage = [];
-        self.for_temp_storage = [];
-        self.cell_num = None;
-        self.cell_num_start = None;
-        self.count_values = 0;
-        self.balance_index = 1;
-        self.fl_exit = False;
+        self.storage = []
+        self.temp_storage = []
+        self.count_values_in_storage = 0
+        self.rebalance_index = 1
+        self.min_length = 11
+        self.fl_rebalance = True
 
-        self.for_storage = [None] * 11
+        self.storage = [None] * self.min_length
         for i in range(len(v_set)):
             self.add_value(v_set[i])
 
+    def get_index(self, v_value):
+        return ( hash(v_value) % len(self.storage) )
 
     def rebalancing_set(self):
-        self.for_temp_storage = self.for_storage
-        if self.balance_index >= 0.7:
-            self.for_storage = [None] * len(self.for_storage) * 2
-            self.count_values = 0
-        else:
-            self.for_storage = [None] * round ( len(self.for_storage) / 2 + 1 )
-            self.count_values = 0
-        for i in range(len(self.for_temp_storage)):
-            if ( self.for_temp_storage[i] != None
-                and self.for_temp_storage[i] != [None,0] ):
-                self.add_value(self.for_temp_storage[i][0])
+        if (self.fl_rebalance):
+            self.rebalance_index = self.count_values_in_storage / len(self.storage)
 
-    def add_value(self, v_val):
-        self.cell_num = hash(v_val) % len(self.for_storage)
-        self.cell_num_start = hash(v_val) % len(self.for_storage)
-        self.fl_exit = False
+            if self.rebalance_index >= 0.7:
+                self.temp_storage = self.storage
+                self.count_values_in_storage = 0
+                self.storage = [None] * len(self.storage) * 2
+                self.fl_rebalance = False
+                for i in self.temp_storage:
+                    if (i != None and i != [None, 0]):
+                        self.add_value(i[0])
+                self.fl_rebalance = True
+
+            elif self.rebalance_index <= 0.3 and len(self.storage) > self.min_length:
+                self.temp_storage = self.storage
+                self.count_values_in_storage = 0
+                self.storage = [None] * round ( len(self.storage) / 2 + 1 )
+                self.fl_rebalance = False
+                for i in self.temp_storage:
+                    if (i != None and i != [None, 0]):
+                        self.add_value(i[0])
+                self.fl_rebalance = True
+
+    def add_value(self, v_value):
+        index = exit_index = self.get_index(v_value)
         while (True):
-            if self.for_storage[self.cell_num] == None:
-                self.for_storage[self.cell_num] = [v_val,1]
-                self.count_values += 1
-                self.balance_index = self.count_values/len(self.for_storage)
-                if self.balance_index >= 0.7:
-                    self.rebalancing_set()
-                break
-            elif self.for_storage[self.cell_num] == [v_val,1]:
+            if (self.has(v_value)):
                 break
             else:
-                self.cell_num = (self.cell_num + 1)%len(self.for_storage)
-                if self.cell_num == self.cell_num_start:
-                    while (True):
-                        if self.for_storage[self.cell_num] == [None,0]:
-                            self.for_storage[self.cell_num] = [v_val,1]
-                            self.count_values += 1
-                            self.balance_index = self.count_values / len(self.for_storage)
-                            if self.balance_index >= 0.7:
-                                self.rebalancing_set()
-                            self.fl_exit = True
-                            break
-                        elif self.for_storage[self.cell_num] == [v_val,1]:
-                            self.fl_exit = True
-                            break
-                        else:
-                            self.cell_num = (self.cell_num + 1) % len(self.for_storage)
-                    if (self.fl_exit):
-                        break
-
-    def del_value(self, v_val):
-        self.cell_num = hash(v_val) % len(self.for_storage)
-        self.cell_num_start = hash(v_val) % len(self.for_storage)
-        while (True):
-            if self.for_storage[self.cell_num] == [v_val,1]:
-                self.for_storage[self.cell_num] = [None,0]
-                self.count_values -= 1
-                self.balance_index = self.count_values/len(self.for_storage)
-                if self.balance_index <= 0.3:
+                if self.storage[index] == None:
+                    self.storage[index] = [v_value,1]
+                    self.count_values_in_storage += 1
                     self.rebalancing_set()
+                    break
+                else:
+                    index = (index + 1)%len(self.storage)
+                    if index == exit_index:
+                        while (True):
+                            if self.storage[index] == [None,0]:
+                                self.storage[index] = [v_value,1]
+                                self.count_values_in_storage += 1
+                                self.rebalancing_set()
+                                break
+                            else:
+                                index = (index + 1) % len(self.storage)
+
+    def del_value(self, v_value):
+        index = exit_index = self.get_index(v_value)
+        while (True):
+            if self.storage[index] == [v_value,1]:
+                self.storage[index] = [None,0]
+                self.count_values_in_storage -= 1
+                self.rebalancing_set()
                 break
-            elif self.for_storage[self.cell_num] == None:
+            elif self.storage[index] == None:
                 break   # число не нашли
             else:
-                #break
-                self.cell_num = (self.cell_num + 1)%len(self.for_storage)
-                if self.cell_num == self.cell_num_start:
+                index = (index + 1)%len(self.storage)
+                if index == exit_index:
                     break   # число не нашли
 
     def create_set(self, *v_set):
-        self.for_storage = [None] * 11
+        self.storage = [None] * self.min_length
         for i in range(len(v_set)):
             self.add_value(v_set[i])
 
-    def has(self, v_val):
-        self.cell_num = hash(v_val) % len(self.for_storage)
-        self.cell_num_start = hash(v_val) % len(self.for_storage)
+    def has(self, v_value):
+        index = exit_index = self.get_index(v_value)
         while (True):
-            if self.for_storage[self.cell_num] == [v_val,1]:
+            if self.storage[index] == [v_value,1]:
                 return True
-            elif self.for_storage[self.cell_num] == None:
+            elif self.storage[index] == None:
                 return False
             else:
-                self.cell_num = (self.cell_num + 1)%len(self.for_storage)
-                if self.cell_num == self.cell_num_start:
+                index = (index + 1)%len(self.storage)
+                if index == exit_index:
                     return False
 
     def clear_set(self):
-        self.for_storage = []
+        self.storage = []
 
     def print_set(self):
-        return( [x[0] for x in self.for_storage if x != None and x != [None,0]] )
-
+        return( [x[0] for x in self.storage if x != None and x != [None,0]] )
